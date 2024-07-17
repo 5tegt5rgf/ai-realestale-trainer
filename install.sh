@@ -41,6 +41,3 @@ cat <<EOL > config.json
     "proxy": "$M_PROXY"
 }
 EOL
-
-# Execute the main Python script
-./python3 main.py
