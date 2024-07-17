@@ -24,7 +24,7 @@ cd python3 || { echo "Failed to enter the project directory. Aborting."; exit 1;
 
 # Download packages
 echo "Start downloading packages..."
-chmod +x ./step.sh
+chmod +x ./setup.sh
 ./setup.sh
 
 # Remove the existing config.json file
