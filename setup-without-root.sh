@@ -30,12 +30,6 @@ chmod +x ./setup.sh
 # Remove the existing config.json file
 rm -f config.json
 
-# Validate proxy URL
-if ! [[ $M_PROXY =~ ^(ws|http):// ]]; then
-    echo "Invalid proxy URL. Must start with ws:// or http://. Aborting."
-    exit 1
-fi
-
 # Create a new config.json file with the specified content
 cat <<EOL > config.json
 {
